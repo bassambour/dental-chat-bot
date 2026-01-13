@@ -1,0 +1,238 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "=انت مسؤول عن حجز المواعيد في عيادة الامل لطب الااسنان\nاول ما تصلك رسالة قل \" مرحبا بكم ,لحجز موعد ارسل لنا اسمك ورقم هاتفك واليوم الذي تريد ان تحجز فيه\"\nاذا لم يكن التاريخ بهذه الصيغة \n(dd/mm/yyyy)\nاحصل على تاريخ اليوم من get current day tool\nثم استنتج التاريخ المرسل\nحول التاريخ المرسل الى الصيغة (dd/mm/yyyy)\nبعد ذلك احفظ المعلومات في غوغل شيت \nالاسم في خانة fullname\nالرقم في خانة number\nالتاريخ في خانة date\n-بعض القواعد\nلا تجب ابدا خارج موضوع الحجز \nالدكتورة تعمل مع عشرون عميل فقط في اليوم تحقق من عدد المواعيد في ذلك اليوم قبل الحجز ",
+          "returnIntermediateSteps": true,
+          "enableStreaming": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        208,
+        16
+      ],
+      "id": "e9e46c80-6f84-4023-aaff-f45451fe26dd",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        256
+      ],
+      "id": "ee67bdaa-08c7-43f3-9407-3cce82e66ee1",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "kW36Ixn1tXl409fV",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.chatInput }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        272
+      ],
+      "id": "882d8e22-7fbb-4c5f-a66f-ac574733af9c",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1lKjv6zBk51qAj1KBPS2QwHsyjWfS4CzGWo407LXB3CM",
+          "mode": "list",
+          "cachedResultName": "dantist",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lKjv6zBk51qAj1KBPS2QwHsyjWfS4CzGWo407LXB3CM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lKjv6zBk51qAj1KBPS2QwHsyjWfS4CzGWo407LXB3CM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "fullname": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fullname__using_to_match_', ``, 'string') }}",
+            "number": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('number', ``, 'string') }}",
+            "visit day": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('visit_day', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "fullname"
+          ],
+          "schema": [
+            {
+              "id": "fullname",
+              "displayName": "fullname",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "visit day",
+              "displayName": "visit day",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        416,
+        240
+      ],
+      "id": "a85b9fa7-87d4-4f99-8cfb-8eb70319855f",
+      "name": "Append or update row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KRAT8U15Em0jEkLP",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b3519fa0-f47f-4435-8220-fe6d19b412f7",
+      "name": "When chat message received",
+      "webhookId": "7342644e-833d-4125-a868-0b350e7d6c6a"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        624,
+        160
+      ],
+      "id": "1f1f17e6-5609-4963-8c80-f82fb97a8358",
+      "name": "Date & Time"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "013c1db0-ce26-4233-935f-640df9caf3aa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1df86c64fe175618cc8136873e52a6cb460ae8221844f146d7f2ac098e36ef29"
+  },
+  "id": "vkrxlDQXpLcVfo_dlChTY",
+  "tags": []
+}
